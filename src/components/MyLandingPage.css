@@ -1,0 +1,14 @@
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap");
+
+.landing-page-navlink {
+  font-family: "Cinzel", serif;
+  color: #333;
+  padding: 8px 12px;
+  transition: background 0.3s;
+  display: inline-block;
+
+  &:hover {
+    background-color: #f2f2f2;
+    border-radius: 4px;
+  }
+}

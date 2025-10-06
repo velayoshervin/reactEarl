@@ -1,0 +1,104 @@
+/* === HERO === */
+.hero {
+  height: 80vh !important;
+  display: flex;
+  align-items: center; /* vertical center */
+  justify-content: flex-start; /* align to left */
+  position: relative;
+  color: white;
+  padding-left: 60px; /* spacing from left edge */
+  text-align: left;
+}
+/* === HERO LIFT EFFECT === */
+.hero {
+  transition: transform 1s ease-in-out;
+}
+.hero.lifted {
+  transform: translateY(-50px) scale(0.95); /* lifts and zooms out a bit */
+}
+
+.hero .overlay {
+  position: absolute;
+
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.2); /* lighter overlay for clearer photo */
+  z-index: -1;
+}
+
+.hero-text {
+  position: relative;
+  z-index: 2;
+  max-width: 600px;
+}
+
+.hero-text h1 {
+  font-family: "Allura", cursive;
+  font-size: 130px;
+  font-weight: 200;
+  color: #fff;
+  margin: 0;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
+  line-height: 1;
+}
+
+.hero-text h2 {
+  font-family: "Cinzel", serif;
+  font-size: 18px;
+  letter-spacing: 8px;
+  font-weight: 200;
+  color: #ccc;
+  margin: 0;
+  margin-top: -10px; /* keeps it close to h1 */
+  margin-bottom: 25px; /* adds space before buttons */
+}
+
+.hero-text p {
+  font-size: 20px;
+  margin-bottom: 25px;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 15px;
+}
+
+.hero-buttons .btn {
+  padding: 10px 20px;
+  background: rgb(252, 250, 250);
+  color: black;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: bold;
+}
+/* === HERO BUTTON HOVER EFFECT === */
+.hero-buttons .btn:hover {
+  background: #bdbdbd; /* gray hover */
+  color: black;
+  transition: background 0.3s ease, transform 0.2s ease;
+  transform: translateY(-2px); /* slight lift effect */
+}
+.hero-buttons .dark:hover {
+  background: #999; /* darker gray */
+  color: white;
+}
+.hero-buttons .dark {
+  background: rgb(252, 250, 250);
+  color: black;
+}
+
+.services.visible {
+  opacity: 1;
+}
+
+.venue .visible {
+  opacity: 1 !important ;
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}

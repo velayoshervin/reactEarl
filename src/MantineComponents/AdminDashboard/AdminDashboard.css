@@ -1,0 +1,17 @@
+.admin-btn {
+  margin-top: none;
+  padding: 8px 16px 8px 32px;
+  border: 1px solid transparent;
+  border-top-right-radius: 50px;
+  border-bottom-right-radius: 50px;
+}
+
+.admin-active-btn {
+  background-color: #c6e3f8;
+  color: #1971c2;
+}
+
+.admin-active-btn-darkmode {
+  background-color: #e7f5ff;
+  color: black;
+}

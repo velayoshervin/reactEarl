@@ -1,0 +1,98 @@
+.toastui-calendar-week-view-day-names {
+  height: 120px !important;
+  padding: 10px;
+  border-bottom: none !important;
+}
+
+/* Hide empty Milestone/Task/All-Day rows 20
+.toastui-calendar-allday,
+.toastui-calendar-task,
+.toastui-calendar-milestone {
+  display: none !important;
+  height: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+/* Remove their titles */
+/* .toastui-calendar-template-alldayTitle, */
+.toastui-calendar-template-taskTitle,
+.toastui-calendar-template-milestoneTitle {
+  display: none !important;
+}
+
+.toastui-calendar-day-names.toastui-calendar-week {
+  border-top: none !important;
+  border-bottom: none !important;
+}
+
+/* Remove vertical and horizontal grid lines in the week view */
+.toastui-calendar-timegrid-cell,
+.toastui-calendar-timegrid-hour,
+.toastui-calendar-timegrid-gridline {
+  border: none !important;
+  border-bottom: none !important;
+  border-top: none !important;
+}
+
+.toastui-calendar-timegrid .toastui-calendar-columns .toastui-calendar-column {
+  border-right: none !important;
+}
+
+.toastui-calendar-timegrid-scroll-area {
+  background-color: #f5f6f7 !important;
+}
+
+.toastui-calendar-panel.toastui-calendar-time::-webkit-scrollbar {
+  display: none;
+}
+
+.toastui-calendar-panel.toastui-calendar-time {
+  scrollbar-width: none; /* Firefox */
+}
+
+/* For IE, Edge */
+.toastui-calendar-panel.toastui-calendar-time {
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.toastui-calendar-panel-grid-wrapper {
+  display: none;
+}
+
+/* .toastui-calendar-allday-panel {
+  display: none;
+}
+
+.toastui-calendar-allday {
+  display: none;
+} */
+
+.toastui-calendar-day-name-item.toastui-calendar-week {
+  line-height: 32px;
+}
+
+#tui-calendar-container,
+#tui-calendar-container * {
+  font-family: "Outfit", sans-serif !important;
+}
+
+.toastui-calendar-week {
+  height: calc(100% / 6) !important ; /* if calendar always shows 6 rows */
+}
+
+.toastui-calendar-popup-container {
+  display: none !important;
+}
+
+/* Better event hover effects */
+.tui-full-calendar-time-date:hover {
+  transform: translateY(-1px);
+  transition: transform 0.2s ease;
+}
+
+.toastui-calendar-weekday-event {
+  height: 40px !important; /* new height */
+  line-height: 40px !important; /* center text vertically */
+  padding: 4px !important;
+}

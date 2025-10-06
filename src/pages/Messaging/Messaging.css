@@ -1,0 +1,45 @@
+.message-list {
+  width: 388px;
+}
+
+.message-box {
+  flex: 1;
+}
+
+@media (max-width: 961px) {
+  .sidebar {
+    width: 220px;
+  }
+  .message-list {
+    width: 266.267px;
+  }
+  .message-box {
+    flex: none;
+    width: 438.333px;
+  }
+}
+
+@media (max-width: 887.2px) {
+  .sidebar {
+    display: none;
+  }
+  .message-list {
+    width: 266.267px;
+  }
+  .message-box {
+    width: 620.133px;
+  }
+}
+
+@media (max-width: 542.2px) {
+  .container {
+    flex-direction: column;
+  }
+  .message-list {
+    display: none;
+  }
+  .message-box {
+    width: 100%;
+    flex: 1;
+  }
+}

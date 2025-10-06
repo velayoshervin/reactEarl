@@ -1,0 +1,25 @@
+#root {
+  max-width: 100vw;
+  margin: 0 auto;
+  padding: 0;
+  /* text-align: center; */
+}
+
+.my-table .mantine-DataTable-th {
+  text-align: left;
+}
+
+body {
+  font-family: "Outfit", sans-serif !important;
+  font-size: var(--mantine-font-size-md);
+  line-height: var(--mantine-line-height);
+  color: var(--mantine-color-text) !important;
+}
+
+#tui-calendar-container * {
+  font-family: "Outfit", sans-serif !important;
+}
+
+button {
+  cursor: pointer;
+}
