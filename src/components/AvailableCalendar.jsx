@@ -6,7 +6,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import { showNotification } from "@mantine/notifications";
 
-const AvailableCalendar = ({ onDateSelect, user }) => {
+const AvailableCalendar = ({ onDateSelect, initialDate }) => {
   const [excludedDates, setExcludedDates] = useState([]);
   const [pickedDate, setPickedDate] = useState(null);
 
@@ -34,6 +34,12 @@ const AvailableCalendar = ({ onDateSelect, user }) => {
     fetchBlockedDates();
   }, []);
 
+  useEffect(() => {
+    if (initialDate) {
+      setPickedDate(initialDate);
+    }
+  }, [initialDate]);
+
   const handleSelect = (date) => {
     if (!date) return;
     if (isDateExcluded(date)) {
@@ -55,6 +61,7 @@ const AvailableCalendar = ({ onDateSelect, user }) => {
       <Calendar
         value={pickedDate}
         onChange={handleSelect}
+        minDate={dayjs().add(4, "day").toDate()}
         renderDay={(date) => {
           const booked = isDateExcluded(date);
           const selected =

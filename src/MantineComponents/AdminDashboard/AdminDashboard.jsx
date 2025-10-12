@@ -47,6 +47,9 @@ import PaymentsAdmin from "./PaymentsAdmin";
 import Messaging from "../../pages/Messaging/Messaging";
 import AdminQuotationsView from "./AdminQuotationsView";
 import AdminBooking from "./AdminBooking";
+import PackageBundle from "../../components/ProductComponents/PackageBundle";
+import PackageForm from "../../components/ProductComponents/PackageForm";
+import TaskAssignment from "./TaskAssignment";
 
 export default function AdminDashboard() {
   const [opened, { toggle }] = useDisclosure();
@@ -272,7 +275,7 @@ export default function AdminDashboard() {
           >
             Bookings
           </NavLink>
-          <NavLink
+          {/* <NavLink
             className={`admin-btn ${
               activeNavlink === "consultations" ? "admin-active-btn" : ""
             }`}
@@ -280,7 +283,7 @@ export default function AdminDashboard() {
             onClick={() => setActiveNavLink("consultations")}
           >
             Consultations
-          </NavLink>
+          </NavLink> */}
 
           <NavLink
             className={`admin-btn ${
@@ -292,7 +295,7 @@ export default function AdminDashboard() {
             Quotations
           </NavLink>
 
-          <NavLink
+          {/* <NavLink
             className={`admin-btn ${
               activeNavlink === "real-booking" ? "admin-active-btn" : ""
             }`}
@@ -300,7 +303,7 @@ export default function AdminDashboard() {
             onClick={() => setActiveNavLink("real-booking")}
           >
             Bookings
-          </NavLink>
+          </NavLink> */}
           <NavLink
             className={`admin-btn ${
               activeNavlink === "Payments" ? "admin-active-btn" : ""
@@ -336,6 +339,15 @@ export default function AdminDashboard() {
             onClick={() => setActiveNavLink("messages")}
           >
             Messages
+          </NavLink>
+          <NavLink
+            className={`admin-btn ${
+              activeNavlink === "tasks-assignment" ? "admin-active-btn" : ""
+            }`}
+            to="/admin-dashboard/tasks-assignment"
+            onClick={() => setActiveNavLink("task-assignment")}
+          >
+            Tasks Assignment
           </NavLink>
           <NavLink
             className={`admin-btn ${
@@ -410,11 +422,14 @@ export default function AdminDashboard() {
           />
           <Route path="quotations" element={<AdminQuotationsView />} />
           <Route path="messages" element={<Messaging />} />
+          {/* <Route path="tasks-assignment" element={<TaskAssignment />} /> */}
           <Route path="payments" element={<PaymentsAdmin />} />
           <Route path="reports" element={<ReportsPage />} />
           <Route path="packagesAndServices" element={<PackagesAndServices />} />
           <Route path="/general-setting" element={<GeneralSetting />} />
           <Route path="/user-role-setting" element={<UserRoleManager />} />
+          <Route path="package-bundle" element={<PackageBundle />} />
+          <Route path="package-update" element={<PackageForm />} />
           <Route index element={<DashboardPage />} />
         </Routes>
       </AppShell.Main>

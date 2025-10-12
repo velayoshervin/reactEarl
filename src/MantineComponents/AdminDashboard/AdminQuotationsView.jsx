@@ -10,13 +10,16 @@ import {
   Flex,
   Select,
   Box,
+  Avatar,
   LoadingOverlay,
   Loader,
   Card,
   Divider,
   Tooltip,
 } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import { IconCheck, IconX, IconEdit, IconMessage } from "@tabler/icons-react";
+import axios from "axios";
 
 import { DataTable } from "mantine-datatable";
 import dayjs from "dayjs";
@@ -85,6 +88,72 @@ const AdminQuotationsView = () => {
       </Badge>
     </Tooltip>
   );
+
+  const handleApprove = async (row) => {
+    if (row.status !== "SUBMITTED") {
+      notifications.show({
+        title: "Action Not Allowed",
+        message: "Can only set to pending payment when status is SUBMITTED",
+        color: "yellow",
+      });
+      return;
+    }
+    const quotationId = row.quotationId;
+    try {
+      const response = await axios.patch(
+        `http://localhost:8080/quotations/${quotationId}/pending-payment`,
+        {},
+        { withCredentials: true }
+      );
+
+      notifications.show({
+        title: "Quotation Approved",
+        message: "Quotation set to pending payment",
+        color: "green",
+      });
+
+      // queryClient.invalidateQueries(["quotations"]);
+    } catch (error) {
+      notifications.show({
+        title: "Action Failed",
+        message: error.response?.data?.message || "Unable to update quotation",
+        color: "red",
+      });
+    }
+  };
+
+  const handleReject = async (row) => {
+    if (row.status !== "SUBMITTED") {
+      notifications.show({
+        title: "Action Not Allowed",
+        message: "Can only reject when status is SUBMITTED",
+        color: "yellow",
+      });
+      return;
+    }
+    const quotationId = row.quotationId;
+    try {
+      const response = await axios.patch(
+        `http://localhost:8080/quotations/${quotationId}/reject`,
+        {},
+        { withCredentials: true }
+      );
+
+      notifications.show({
+        title: "Quotation Rejected",
+        message: "The quotation has been rejected",
+        color: "orange",
+      });
+
+      // queryClient.invalidateQueries(["quotations"]);
+    } catch (error) {
+      notifications.show({
+        title: "Rejection Failed",
+        message: error.response?.data?.message || "Unable to reject quotation",
+        color: "red",
+      });
+    }
+  };
 
   const LineItemModal = ({ onEdit }) => (
     <Modal opened={opened} onClose={close} size="lg" withCloseButton={false}>
@@ -237,7 +306,19 @@ const AdminQuotationsView = () => {
             accessor: "",
             title: "Submitted by",
             textAlign: "center",
-            render: (row) => <UserHoverCard user={row.userDto} />,
+            render: (row) => (
+              <div className="flex items-center">
+                <Avatar src={row.user.avatarUrl || null}>
+                  {!row.user.avatar &&
+                    row.user.firstname[0] + row.user.lastname[0]}
+                </Avatar>
+                <div className="flex">
+                  <Text>{row.user.firstname}</Text>
+                  <span> </span>
+                  <Text>{row.user.lastname}</Text>
+                </div>
+              </div>
+            ),
           },
           {
             accessor: "requestedEventDate",
@@ -304,17 +385,26 @@ const AdminQuotationsView = () => {
             render: (row) => {
               return (
                 <div className="grid grid-cols-2 gap-2">
-                  <ActionBadge
+                  <Button
+                    size="xs"
                     color="green"
-                    icon={<IconCheck size={12} />}
-                    label="Approve"
-                  />
-                  <ActionBadge
+                    variant="light"
+                    leftSection={<IconCheck size={12} />}
+                    onClick={() => handleApprove(row)}
+                  >
+                    Approve
+                  </Button>
+                  <Button
+                    size="xs"
                     color="red"
-                    icon={<IconX size={12} />}
-                    label="Reject"
-                  />
-                  <ActionBadge
+                    variant="light"
+                    leftSection={<IconX size={12} />}
+                    onClick={() => handleReject(row)}
+                  >
+                    Reject
+                  </Button>
+
+                  {/* <ActionBadge
                     color="teal"
                     icon={<IconMessage size={12} />}
                     label="Message"
@@ -323,7 +413,7 @@ const AdminQuotationsView = () => {
                     color="yellow"
                     icon={<IconEdit size={12} />}
                     label="Edit"
-                  />
+                  /> */}
                 </div>
               );
             },

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
   Table,
   Button,
@@ -10,44 +10,43 @@ import {
   Flex,
   Select,
   Box,
-  LoadingOverlay,
   Loader,
   Card,
   Divider,
+  HoverCard,
+  Avatar,
 } from "@mantine/core";
 import axios from "axios";
 import { queryClient } from "../../AxiosTanstack";
-import CalendarBlocked from "../../components/CalendarBlocked";
 import { DataTable } from "mantine-datatable";
 import dayjs from "dayjs";
 import "mantine-datatable/styles.layer.css";
 import { useDisclosure } from "@mantine/hooks";
 import { IconFileDescription, IconInfoCircle } from "@tabler/icons-react";
 import PCardContainer from "../../components/ProductComponents/PCardContainer";
+import Customization from "../../MantineComponents/mantine/Customization";
+import { notifications } from "@mantine/notifications";
+import { modals } from "@mantine/modals";
+import AvailableCalendar from "../../components/AvailableCalendar";
+import { IconCalendarEvent } from "@tabler/icons-react";
+
 const QuotationsTable = () => {
   const [quotations, setQuotations] = useState([]);
   const [page, setPage] = useState(1);
-  // eslint-disable-next-line no-unused-vars
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize] = useState(10);
   const [selectedQuotation, setSelectedQuotation] = useState(null);
-  //   const [open, setOpen] = useState(false);
-  // eslint-disable-next-line no-unused-vars
   const [currentUser, setCurrentUser] = useState();
   const [userId, setUserId] = useState();
   const [selectValue, setSelectValue] = useState(null);
   const [eventDate, setEventDate] = useState(null);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [opened, { open, close }] = useDisclosure(false);
-  const [totalPayment, setTotalPayment] = useState();
+  const [totalPayment, setTotalPayment] = useState(undefined);
   const [isLoadingPayments, setIsLoadingPayments] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
   const [editQuotation, setEditQuotation] = useState(false);
 
-  useEffect(() => {
-    console.log("totalPayment updated:", totalPayment);
-    console.log("selectedQuotation status:", selectedQuotation?.status);
-  }, [totalPayment, selectedQuotation]);
+  const [selectedEditQuotation, setSelectedEditQuotation] = useState();
 
   const [paginatedResponse, setPaginatedResponse] = useState({
     content: [],
@@ -58,59 +57,38 @@ const QuotationsTable = () => {
     last: false,
   });
 
-  const getPaymentOptions = (quotation, totalPayment) => {
+  // 🧭 Payment options generator
+  const getPaymentOptions = useCallback((quotation, totalPayment) => {
     if (!quotation) return [];
 
-    const baseOptions = [
-      {
-        value: "reservation",
-        label: (quotation.total * 0.1).toLocaleString("en-PH", {
-          style: "currency",
-          currency: "PHP",
-        }),
-        tag: "10% reservation fee",
-      },
-      {
-        value: "book",
-        label: (quotation.total * 0.2).toLocaleString("en-PH", {
-          style: "currency",
-          currency: "PHP",
-        }),
-        tag: "20% booking fee",
-      },
-      {
-        value: "pay Full",
-        label: quotation.total.toLocaleString("en-PH", {
-          style: "currency",
-          currency: "PHP",
-        }),
-        tag: "Pay in full",
-      },
-    ];
+    console.log("🔄 getPaymentOptions:", {
+      status: quotation.status,
+      totalPayment,
+      total: quotation.total,
+    });
+
+    const formatCurrency = (v) =>
+      v.toLocaleString("en-PH", { style: "currency", currency: "PHP" });
+
+    const total = quotation.total ?? 0;
 
     if (quotation.status === "RESERVED") {
       return [
         {
           value: "book",
-          label: (quotation.total * 0.2).toLocaleString("en-PH", {
-            style: "currency",
-            currency: "PHP",
-          }),
-          tag: "Pay additional 20% to confirm booking (20% of total due)",
+          label: formatCurrency(total * 0.2),
+          tag: "Pay additional 20% to confirm booking",
         },
         {
           value: "pay Remaining",
-          label: (quotation.total * 0.9).toLocaleString("en-PH", {
-            style: "currency",
-            currency: "PHP",
-          }),
-          tag: "Pay remaining 90% balance (full payment)",
+          label: formatCurrency(total * 0.9),
+          tag: "Pay remaining 90% balance",
         },
       ];
     }
 
     if (quotation.status === "BOOKED") {
-      if (totalPayment == null) {
+      if (totalPayment == null)
         return [
           {
             value: "pay Remaining",
@@ -118,29 +96,40 @@ const QuotationsTable = () => {
             tag: "Fetching payment info...",
           },
         ];
-      }
-      if (totalPayment > 0)
-        return [
-          {
-            value: "pay Remaining",
-            label: (quotation.total - totalPayment / 100).toLocaleString(
-              "en-PH",
-              {
-                style: "currency",
-                currency: "PHP",
-              }
-            ),
-            tag: "Pay remaining balance",
-          },
-        ];
+
+      return [
+        {
+          value: "pay Remaining",
+          label: formatCurrency(total - totalPayment),
+          tag: "Pay remaining balance",
+        },
+      ];
     }
 
-    if (quotation.status === "PAID") {
-      return []; // fully paid, no more options
-    }
+    if (quotation.status === "PAID") return [];
 
-    return baseOptions; // fallback for DRAFT, SUBMITTED, APPROVED, etc.
-  };
+    // Default (DRAFT)
+    return [
+      {
+        value: "reservation",
+        label: formatCurrency(total * 0.1),
+        tag: "10% reservation fee",
+      },
+      {
+        value: "book",
+        label: formatCurrency(total * 0.2),
+        tag: "20% booking fee",
+      },
+      { value: "pay Full", label: formatCurrency(total), tag: "Pay in full" },
+    ];
+  }, []);
+
+  const paymentOptions = useMemo(() => {
+    if (!selectedQuotation) return [];
+    const options = getPaymentOptions(selectedQuotation, totalPayment);
+    console.log("💾 Final payment options:", options);
+    return options;
+  }, [selectedQuotation, totalPayment, getPaymentOptions]);
 
   const fetchQuotationById = async (pageNumber) => {
     try {
@@ -152,31 +141,10 @@ const QuotationsTable = () => {
         }
       );
       setPaginatedResponse(res.data);
-      console.log(res.data, "paginated Response");
       setQuotations(res.data.content);
       setTotalPages(res.data.totalPages);
     } catch (err) {
       console.error(err);
-    }
-  };
-
-  const fetchTotalPaymentsForSelectedQuotation = async () => {
-    try {
-      setIsLoadingPayments(true);
-
-      const res = await axios.get(
-        `http://localhost:8080/quotations/totalPayments`,
-        {
-          params: { quotationId: selectedQuotation?.quotationId },
-          withCredentials: true,
-        }
-      );
-      setTotalPayment(res?.data);
-      setRefreshKey((prev) => prev + 1);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoadingPayments(false);
     }
   };
 
@@ -189,217 +157,71 @@ const QuotationsTable = () => {
   }, []);
 
   useEffect(() => {
-    if (userId) {
-      fetchQuotationById(page - 1);
-    }
+    if (userId) fetchQuotationById(page - 1);
   }, [page, userId]);
-
-  const LineItemModal = ({ onEdit }) => (
-    <Modal opened={opened} onClose={close} size="lg" withCloseButton={false}>
-      <div className="py-2">
-        <Group justify="space-between">
-          <Text
-            size="lg"
-            fw={600}
-            c="blue"
-            style={{ textTransform: "uppercase" }}
-          >
-            Quotation #{selectedQuotation?.quotationId}
-          </Text>
-
-          <Text size="sm" c="dimmed">
-            Submitted by:
-          </Text>
-          <div className="flex gap-1">
-            <Text size="sm" c="dimmed">
-              {selectedQuotation?.userDto?.firstname}
-            </Text>
-            <Text size="sm" c="dimmed">
-              {selectedQuotation?.userDto?.lastname}
-            </Text>
-          </div>
-
-          <Text size="sm" c="dimmed">
-            <span>Event Date: </span>
-            {dayjs(selectedQuotation?.requestedEventDate).format(
-              "MMMM D, YYYY"
-            )}
-          </Text>
-        </Group>
-      </div>
-
-      <Stack spacing="xs" mt="xs">
-        {selectedQuotation?.lineItems?.map((lineItem) => {
-          const firstPhoto = lineItem.item?.photos?.[0]?.url;
-
-          return (
-            <Card key={lineItem.id} shadow="xs" withBorder>
-              <Group position="apart" align="flex-start">
-                {/* Thumbnail */}
-                {firstPhoto ? (
-                  <img
-                    src={firstPhoto}
-                    alt={lineItem.description}
-                    style={{
-                      width: 80,
-                      height: 60,
-                      objectFit: "cover",
-                      borderRadius: "8px",
-                    }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      width: 80,
-                      height: 60,
-                      borderRadius: "8px",
-                      background: "#f1f3f5",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "0.8rem",
-                      color: "#999",
-                    }}
-                  >
-                    No Image
-                  </div>
-                )}
-
-                {/* Item Details */}
-                <Stack spacing={1} style={{ flex: 1 }}>
-                  <Text fw={500}>{lineItem.description}</Text>
-                  <Text size="sm" c="dimmed">
-                    {lineItem.quantity} ×{" "}
-                    {Number(lineItem.priceAtQuotation).toLocaleString("en-PH", {
-                      style: "currency",
-                      currency: "PHP",
-                    })}
-                  </Text>
-                </Stack>
-
-                {/* Subtotal */}
-                <Text fw={600} size="sm" c="blue">
-                  {(
-                    Number(lineItem.priceAtQuotation) * lineItem.quantity
-                  ).toLocaleString("en-PH", {
-                    style: "currency",
-                    currency: "PHP",
-                  })}
-                </Text>
-              </Group>
-            </Card>
-          );
-        })}
-      </Stack>
-
-      <Divider my="md" />
-
-      {/* Total */}
-      <Group position="apart">
-        <Text fw={600}>Total</Text>
-        <Text fw={700} size="lg" c="blue">
-          {selectedQuotation?.lineItems
-            ?.reduce(
-              (sum, item) =>
-                sum + Number(item.priceAtQuotation) * item.quantity,
-              0
-            )
-            .toLocaleString("en-PH", {
-              style: "currency",
-              currency: "PHP",
-            })}
-        </Text>
-      </Group>
-
-      {/* Footer Actions */}
-      <div className="flex justify-end py-2 mt-4 gap-4">
-        <Button onClick={onEdit}>Edit</Button>
-        <Button onClick={close} color="red">
-          Close
-        </Button>
-      </div>
-    </Modal>
-  );
 
   // 🟢 Payment modal trigger
   const openPaymentModal = async (quotation) => {
     setSelectedQuotation(quotation);
-
-    if (quotation.requestedEventDate) {
-      setEventDate(dayjs(quotation.requestedEventDate).toDate());
-    } else {
-      setEventDate(null);
-    }
-
-    setSelectValue(null);
-    if (quotation.status === "BOOKED") {
-      await fetchTotalPaymentsForSelectedQuotation();
-    }
+    setEventDate(
+      quotation.requestedEventDate
+        ? dayjs(quotation.requestedEventDate).toDate()
+        : null
+    );
+    setIsLoadingPayments(true);
     setPaymentModalOpen(true);
+
+    try {
+      const res = await axios.get(
+        `http://localhost:8080/quotations/totalPayments`,
+        {
+          params: { quotationId: quotation.quotationId },
+          withCredentials: true,
+        }
+      );
+      console.log("✅ Payments API response:", res.data);
+      setTotalPayment(res.data);
+    } catch (err) {
+      console.error("❌ Failed to fetch total payments:", err);
+      setTotalPayment(null);
+    } finally {
+      setIsLoadingPayments(false);
+    }
   };
 
   const handlePartialPayment = async (quotationId, amount, paymentType) => {
-    console.log("eventdate", typeof eventDate);
-    console.log(eventDate);
-    console.log(paymentType);
-    console.log(selectValue);
-
-    let iso = eventDate.toISOString();
-    alert(iso);
-
     const payload = {
       quotationId,
       amount,
       eventDate: eventDate ? eventDate.toISOString() : null,
     };
 
-    console.log("partial-payment payload", payload);
-
     try {
       const res = await axios.post(
         "http://localhost:8080/public/checkout/partial-payment",
         payload,
-        {
-          params: { paymentType },
-          withCredentials: true,
-        }
+        { params: { paymentType }, withCredentials: true }
       );
 
       const { checkout_url } = res.data;
-      if (checkout_url) {
-        window.location.href = checkout_url;
-      } else {
-        alert("Failed to get checkout URL.");
-      }
+      if (checkout_url) window.location.href = checkout_url;
+      else alert("Failed to get checkout URL.");
     } catch (err) {
-      console.log("err in handle partial pay", err.response);
+      console.error("Partial pay error:", err.response);
     }
   };
 
   const handlePay = async (quotationId, eventDate, amount) => {
     try {
       const eventTime = dayjs(eventDate).format("YYYY-MM-DD");
-
       const res = await axios.post(
         `http://localhost:8080/public/checkout/${quotationId}`,
         {},
-        {
-          params: {
-            eventDate: eventTime,
-            amount,
-          },
-          withCredentials: true,
-        }
+        { params: { eventDate: eventTime, amount }, withCredentials: true }
       );
-
-      console.log("handlePay", amount);
-
       const { checkout_url } = res.data;
-      if (checkout_url) {
-        window.location.href = checkout_url;
-      } else {
-        alert("Failed to get checkout URL.");
-      }
+      if (checkout_url) window.location.href = checkout_url;
+      else alert("Failed to get checkout URL.");
     } catch (err) {
       console.error(err);
       alert("Error creating PayMongo checkout session.");
@@ -407,22 +229,14 @@ const QuotationsTable = () => {
   };
 
   const renderSelectOption = ({ option }) => {
-    const colorMap = {
-      reservation: "green",
-      book: "red",
-      paid: "yellow",
-    };
-
+    const colorMap = { reservation: "green", book: "red", paid: "yellow" };
     return (
       <div className="flex flex-col w-full gap-2 hover:text-blue-600 ">
         <div className="flex items-center justify-end">
-          <Badge color={colorMap[option.value]} className="hover:underline">
-            {option.value}
-          </Badge>
+          <Badge color={colorMap[option.value]}>{option.value}</Badge>
         </div>
-
         {isLoadingPayments ? (
-          <Loader size={30}></Loader>
+          <Loader size={30} />
         ) : (
           <Box pos="relative">
             <p className="hover:underline">{option.label}</p>
@@ -432,27 +246,137 @@ const QuotationsTable = () => {
       </div>
     );
   };
+  const handleRebook = (quotation) => {
+    modals.open({
+      title: "Change Event Date",
+      children: (
+        <div>
+          <Text mb="md">
+            Select new event date for quotation #{quotation.quotationId}
+          </Text>
+
+          <AvailableCalendar
+            initialDate={quotation.requestedEventDate}
+            onDateSelect={(date) => {
+              handleDateChange(quotation.quotationId, date);
+              modals.closeAll(); // Close modal after selection
+            }}
+          />
+        </div>
+      ),
+    });
+  };
+  const handleDateChange = async (quotationId, newDate) => {
+    console.log("📅 Date change debug:", {
+      quotationId,
+      newDate,
+      formattedDate: dayjs(newDate).format("YYYY-MM-DD"),
+    });
+
+    try {
+      const formattedDate = dayjs(newDate).format("YYYY-MM-DD");
+
+      const response = await axios.patch(
+        `http://localhost:8080/quotations/${quotationId}/date/${formattedDate}`,
+        {}, // Empty body
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("✅ Date change successful:", response.data);
+
+      notifications.show({
+        title: "Date Updated",
+        message: "Your event date has been changed successfully",
+        color: "green",
+      });
+
+      fetchQuotationById(page - 1); // Refresh
+    } catch (error) {
+      console.error("❌ Date change error:", {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.response?.data?.message,
+        headers: error.response?.headers,
+      });
+
+      if (error.response?.status === 403) {
+        notifications.show({
+          title: "Access Denied",
+          message: "Please log in again to continue",
+          color: "red",
+        });
+        // window.location.href = '/login';
+      } else {
+        notifications.show({
+          title: "Date Change Failed",
+          message: error.response?.data?.message || "Could not update date",
+          color: "red",
+        });
+      }
+    }
+  };
+
+  const handleCancel = async (quotation) => {
+    modals.openConfirmModal({
+      title: "Cancel Quotation",
+      children: (
+        <div>
+          <Text>Are you sure you want to cancel this quotation?</Text>
+          <Text size="sm" c="dimmed" mt="sm">
+            Quotation #{quotation.quotationId} - {quotation.eventType}
+          </Text>
+        </div>
+      ),
+      labels: { confirm: "Cancel Quotation", cancel: "Keep Active" },
+      confirmProps: { color: "red" },
+      onConfirm: async () => {
+        try {
+          await axios.patch(
+            `http://localhost:8080/quotations/${quotation.quotationId}/cancel`,
+            {},
+            { withCredentials: true }
+          );
+
+          notifications.show({
+            title: "Quotation Cancelled",
+            message: "The quotation has been cancelled successfully",
+            color: "green",
+          });
+
+          queryClient.invalidateQueries(["quotations"]);
+        } catch (error) {
+          notifications.show({
+            title: "Cancellation Failed",
+            message:
+              error.response?.data?.message || "Unable to cancel quotation",
+            color: "red",
+          });
+        }
+      },
+    });
+  };
 
   return (
     <>
+      {/* 🟩 Data Table */}
       <DataTable
         height={600}
         withTableBorder
-        className="w-full rounded"
         verticalSpacing="lg"
         styles={{
           header: {
-            color: "white", // change text color
-            backgroundColor: "#898AC4", // change header background
+            color: "white",
+            backgroundColor: "#898AC4",
             fontWeight: 700,
           },
         }}
         columns={[
-          {
-            accessor: "quotationId",
-            title: "Booking Id",
-            textAlign: "center",
-          },
+          { accessor: "quotationId", title: "Booking Id", textAlign: "center" },
           {
             accessor: "requestedEventDate",
             title: "Event Date",
@@ -462,68 +386,99 @@ const QuotationsTable = () => {
                 ? dayjs(requestedEventDate).format("dddd, MMM D YYYY")
                 : "—",
           },
+          { accessor: "pax", title: "Guest count", textAlign: "center" },
+          { accessor: "eventType", title: "Event", textAlign: "center" },
+          { accessor: "total", title: "Total amount", textAlign: "center" },
           {
-            accessor: "pax",
-            title: "Guest count",
+            accessor: "Fullname",
+            title: "Full name",
             textAlign: "center",
-          },
-          {
-            accessor: "eventType",
-            title: "Event",
-            textAlign: "center",
-          },
-          {
-            accessor: "venue",
-            title: "Venue",
-            textAlign: "center",
-            render: (row) => (row.venue ? row.venue.name : "—"),
+            render: (row) => (
+              <div className="flex items-center">
+                <Avatar src={row.user.avatarUrl || null}>
+                  {" "}
+                  {!row.user.avatar &&
+                    row.user.firstname[0] + row.user.lastname[0]}
+                </Avatar>
+                <div className="flex">
+                  <Text size="sm">{row.user.firstname}</Text> <span> </span>{" "}
+                  <Text size="sm">{row.user.lastname}</Text>
+                </div>
+              </div>
+            ),
           },
           {
             accessor: "status",
             title: "Status",
             textAlign: "center",
             render: (row) => {
-              let color = "";
-
-              switch (row.status) {
-                case "RESERVED":
-                  color = "green";
-                  break;
-                case "BOOKED":
-                  color = "red";
-                  break;
-                case "PAID":
-                  color = "yellow";
-                  break;
-                default:
-                  color = "gray"; // fallback
-              }
-
-              return <Badge color={color}>{row.status}</Badge>;
+              const colorMap = {
+                RESERVED: "green",
+                BOOKED: "red",
+                PAID: "yellow",
+                default: "gray",
+              };
+              return (
+                <Badge color={colorMap[row.status] || colorMap.default}>
+                  {row.status}
+                </Badge>
+              );
             },
           },
           {
-            accessor: "creationTime",
-            title: "Created At",
-            textAlign: "center",
-
-            render: ({ creationTime }) =>
-              dayjs(creationTime).format("MMM D YYYY, h:mm A"),
+            accessor: "Edit",
+            title: "Edit",
+            render: (row) => (
+              <Button
+                size="xs"
+                onClick={() => {
+                  setSelectedEditQuotation(row);
+                  alert(JSON.stringify(row));
+                  console.log(row);
+                }}
+              >
+                Edit
+              </Button>
+            ),
           },
+
           {
-            accessor: "LineItems",
-            textAlign: "center",
+            accessor: "reschedule",
+            title: "Rebook",
             render: (row) => {
+              const isDisabled =
+                !row.status ||
+                !["PAID", "RESERVED", "BOOKED"].includes(row.status);
+
               return (
                 <Button
-                  color="#748DAE"
+                  size="xs"
+                  disabled={isDisabled}
                   onClick={() => {
-                    setSelectedQuotation(row); // set the clicked row
-                    open(); // open modal
+                    handleRebook(row);
                   }}
                 >
-                  <IconFileDescription size={16} className="mr-2" />
-                  Summary
+                  Rebook
+                </Button>
+              );
+            },
+          },
+          {
+            accessor: "cancel",
+            title: "Cancel",
+            render: (row) => {
+              const isDisabled =
+                !row.status ||
+                !["DRAFT", "SUBMITTED", "PENDING_PAYMENT"].includes(row.status);
+
+              return (
+                <Button
+                  size="xs"
+                  color="red"
+                  disabled={isDisabled}
+                  onClick={() => handleCancel(row)}
+                >
+                  Cancel
                 </Button>
               );
             },
@@ -532,17 +487,33 @@ const QuotationsTable = () => {
             accessor: "actions",
             title: "Actions",
             render: (row) => {
-              if (row.status === "PAID") {
-                return (
-                  <Button color="687FE5" disabled>
-                    PAID / BOOKED
-                  </Button>
-                );
-              }
+              const disabledStatuses = [
+                "SUBMITTED",
+                "PAID",
+                "COMPLETED",
+                "REJECTED",
+                "CANCELLED",
+              ];
+              const isDisabled = disabledStatuses.includes(row.status);
+
+              const statusLabels = {
+                SUBMITTED: "PENDING APPROVAL",
+                PAID: "PAID / BOOKED",
+                COMPLETED: "COMPLETED",
+                REJECTED: "REJECTED",
+                CANCELLED: "CANCELLED",
+              };
+
+              const buttonText = statusLabels[row.status] || "PAY";
 
               return (
-                <Button color="#687FE5" onClick={() => openPaymentModal(row)}>
-                  Reserve / Book
+                <Button
+                  size="xs"
+                  color="#687FE5"
+                  disabled={isDisabled}
+                  onClick={isDisabled ? undefined : () => openPaymentModal(row)}
+                >
+                  {buttonText}
                 </Button>
               );
             },
@@ -551,196 +522,62 @@ const QuotationsTable = () => {
         records={quotations}
         totalRecords={paginatedResponse.totalElements ?? 0}
         page={page}
-        onPageChange={(p) => {
-          alert("Page changed to:", p);
-          console.log("Page changed to:", p);
-          setPage(p);
-        }}
+        onPageChange={setPage}
         recordsPerPage={pageSize}
       />
 
-      {selectedQuotation && (
-        <LineItemModal
-          quotation={selectedQuotation}
-          opened={opened}
-          onClose={close}
-          onEdit={() => {
-            setEditQuotation(true);
-            close();
-          }}
-        />
-      )}
-      <Modal
-        opened={editQuotation}
-        size={"full"}
-        onClose={() => setEditQuotation(false)}
-      >
-        <PCardContainer quotation={selectedQuotation}></PCardContainer>
-      </Modal>
-
-      {/* 🟢 Payment Modal */}
+      {/* 🟦 Payment Modal */}
       <Modal
         opened={paymentModalOpen}
-        key={refreshKey}
         onClose={() => setPaymentModalOpen(false)}
-        title={
-          <>
-            <div
-              className="flex items-center gap-4"
-              key={`modal-content-${totalPayment}`}
-            >
-              <Text>{`Quotation ${selectedQuotation?.quotationId}`}</Text>{" "}
-              {selectedQuotation?.status === "RESERVED" && (
-                <Group>
-                  <Badge color="green">RESERVED</Badge>{" "}
-                  <Text size="xs">
-                    {" "}
-                    You have already paid the reservation fee.
-                  </Text>
-                </Group>
-              )}
-              {selectedQuotation?.status === "BOOKED" && (
-                <Group>
-                  <Badge color="ORANGE">BOOKED</Badge>{" "}
-                  <Text size="xs"> You have already paid the booking fee.</Text>
-                </Group>
-              )}
-            </div>
-          </>
-        }
+        title={`Quotation ${selectedQuotation?.quotationId || ""}`}
         size="lg"
       >
         {selectedQuotation && (
           <Flex direction="column" gap="md">
-            {/* Line Items Table */}
-            <Table striped highlightOnHover verticalSpacing="md">
-              <Table.Thead className="bg-[#6D94C5]">
-                <Table.Tr>
-                  <Table.Th>Description</Table.Th>
-                  <Table.Th>Quantity</Table.Th>
-                  <Table.Th>Price</Table.Th>
-                  <Table.Th>Subtotal</Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                {selectedQuotation.lineItems?.map((item) => (
-                  <Table.Tr key={item.id}>
-                    <Table.Td>{item.description}</Table.Td>
-                    <Table.Td>{item.quantity}</Table.Td>
-                    <Table.Td>
-                      {Number(item.priceAtQuotation).toLocaleString("en-PH", {
-                        style: "currency",
-                        currency: "PHP",
-                      })}
-                    </Table.Td>
-                    <Table.Td>
-                      {(
-                        Number(item.priceAtQuotation) * item.quantity
-                      ).toLocaleString("en-PH", {
-                        style: "currency",
-                        currency: "PHP",
-                      })}
-                    </Table.Td>
-                  </Table.Tr>
-                ))}
-              </Table.Tbody>
-              <Table.Tfoot>
-                <Table.Tr>
-                  <Table.Th colSpan={3} style={{ textAlign: "right" }}>
-                    Total
-                  </Table.Th>
-                  <Table.Th>
-                    {selectedQuotation.lineItems
-                      ?.reduce(
-                        (sum, item) =>
-                          sum + Number(item.priceAtQuotation) * item.quantity,
-                        0
-                      )
-                      .toLocaleString("en-PH", {
-                        style: "currency",
-                        currency: "PHP",
-                      })}
-                  </Table.Th>
-                </Table.Tr>
-              </Table.Tfoot>
-            </Table>
+            <Text fw={600}>Payment Option/s</Text>
 
-            {/* Event Date Picker */}
-            <Flex align="center" gap="xs">
-              <Text size="sm">Event Date:</Text>
-              <CalendarBlocked
-                eventDate={eventDate}
-                setEventDate={setEventDate}
-                disabled={!!selectedQuotation?.requestedEventDate}
+            {isLoadingPayments ? (
+              <Flex align="center" gap="xs">
+                <Loader size="sm" />
+                <Text size="sm">Loading payment info...</Text>
+              </Flex>
+            ) : (
+              <Select
+                clearable
+                data={paymentOptions}
+                value={selectValue}
+                onChange={setSelectValue}
+                renderOption={renderSelectOption}
+                placeholder="Select a payment option"
               />
-              <Text size="sm">Payment Option/s</Text>
-
-              {/* Payment Options */}
-              {selectedQuotation?.status === "BOOKED" && isLoadingPayments ? (
-                <>
-                  <Loader size="sm" color="blue" />
-                  <Text size="sm" ml="xs">
-                    Loading payment info...
-                  </Text>
-                </>
-              ) : (
-                <Select
-                  clearable
-                  data={getPaymentOptions(selectedQuotation, totalPayment)}
-                  // data={getPaymentOptions(selectedQuotation)}
-                  disabled={isLoadingPayments}
-                  value={selectValue}
-                  onChange={setSelectValue}
-                  renderOption={renderSelectOption}
-                  key={`select-${refreshKey}`}
-                />
-              )}
-            </Flex>
-
-            {/* Confirm Payment Button */}
-            <div className="flex justify-center text-center ">
-              <IconInfoCircle size={18} className="ml-6"></IconInfoCircle>
-              <Text size="sm" c="dimmed">
-                You will be redirected to our secure payment partner{" "}
-                <span className="text-green-700 font-semibold">
-                  (PAYMONGO){" "}
-                </span>
-                to complete your payment.
-              </Text>
-            </div>
+            )}
 
             <Button
-              className="w-[80%]"
               color="green"
               disabled={!selectValue || !eventDate}
               onClick={() => {
-                if (selectValue === "pay Full") {
-                  let amount = selectedQuotation?.total;
-
-                  handlePay(selectedQuotation.quotationId, eventDate, amount);
-                } else if (selectValue === "pay Remaining") {
-                  if (totalPayment) {
-                    let alreadyPaidPesos = totalPayment / 100; // convert from centavos → pesos
-                    let amount = selectedQuotation.total - alreadyPaidPesos;
-                    alert(amount, " and ", alreadyPaidPesos);
-
-                    handlePay(selectedQuotation.quotationId, eventDate, amount);
-                  }
-                } else if (selectValue === "reservation") {
-                  const amount = selectedQuotation.total * 0.1;
+                const total = selectedQuotation.total;
+                if (selectValue === "pay Full")
+                  handlePay(selectedQuotation.quotationId, eventDate, total);
+                else if (selectValue === "pay Remaining" && totalPayment)
+                  handlePay(
+                    selectedQuotation.quotationId,
+                    eventDate,
+                    total - totalPayment
+                  );
+                else if (selectValue === "reservation")
                   handlePartialPayment(
                     selectedQuotation.quotationId,
-                    amount,
+                    total * 0.1,
                     "reservation"
                   );
-                } else if (selectValue === "book") {
-                  const amount = selectedQuotation.total * 0.2;
+                else if (selectValue === "book")
                   handlePartialPayment(
                     selectedQuotation.quotationId,
-                    amount,
+                    total * 0.2,
                     "book"
                   );
-                }
               }}
             >
               Confirm Payment
@@ -748,6 +585,7 @@ const QuotationsTable = () => {
           </Flex>
         )}
       </Modal>
+      <Customization quotation={selectedEditQuotation} />
     </>
   );
 };
