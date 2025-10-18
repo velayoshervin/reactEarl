@@ -1,0 +1,525 @@
+/* ===========================
+   NEWSFEED CONTAINER
+=========================== */
+.newsfeed-container {
+  max-width: 630px;
+  margin: 0 auto;
+  padding: 0;
+  background: #fafafa;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* ===========================
+   CREATE POST CARD
+=========================== */
+.create-post-card {
+  background: #ffffff;
+  border: 1px solid #dbdbdb;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.post-title-top {
+  padding: 20px 20px 0;
+}
+
+.post-title-top h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #262626;
+}
+
+/* Create post inputs */
+.create-post-title,
+.create-post-content {
+  width: 100%;
+  border: 1px solid #dbdbdb;
+  border-radius: 6px;
+  background: #fafafa;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+
+.create-post-title {
+  padding: 12px;
+  margin: 0 0 12px 0;
+}
+
+.create-post-content {
+  padding: 12px;
+  margin: 12px 0 8px 0;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.create-post-title:focus,
+.create-post-content:focus {
+  border-color: #a8a8a8;
+}
+
+/* File input */
+.file-label {
+  display: inline-block;
+  padding: 8px 16px;
+  background: #f8f9fa;
+  border: 1px solid #dbdbdb;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #262626;
+  margin: 8px 0;
+  transition: background-color 0.2s;
+}
+
+.file-label:hover {
+  background: #e9ecef;
+}
+
+/* Submit button */
+.create-post-btn {
+  background: linear-gradient(135deg, #a87528, #c9c08f);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 12px;
+  transition: background 0.3s ease;
+}
+
+.create-post-btn:hover {
+  background: linear-gradient(135deg, #c9c08f, #a87528);
+}
+
+/* ===========================
+   POSTS CONTAINER
+=========================== */
+.posts-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ===========================
+   POST CARD
+=========================== */
+.post-card {
+  background: #ffffff;
+  border: 1px solid #dbdbdb;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.post-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* ----- Post Header ----- */
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #efefef;
+}
+
+.author-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.author-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a87528, #c9c08f);
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px #e6e6e6;
+  transition: box-shadow 0.2s ease;
+}
+
+.author-avatar:hover {
+  box-shadow: 0 0 6px rgba(168, 117, 40, 0.6);
+}
+
+.author-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.author-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: #262626;
+}
+
+.post-date {
+  font-size: 12px;
+  color: #8e8e8e;
+}
+
+/* ----- Kebab Menu ----- */
+.admin-actions-menu {
+  position: relative;
+}
+
+.kebab-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 5px;
+  color: #262626;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.kebab-btn:hover {
+  color: #a87528;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 30px;
+  right: 0;
+  background: white;
+  border: 1px solid #dbdbdb;
+  border-radius: 8px;
+  z-index: 10;
+  min-width: 120px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.menu-item {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  color: #262626;
+  transition: background 0.2s ease;
+}
+
+.menu-item:hover {
+  background: #f8f8f8;
+}
+
+.menu-item.delete {
+  color: #ed4956;
+}
+
+/* ----- Post Image ----- */
+.post-image-container {
+  width: 100%;
+  background: #000;
+  overflow: hidden;
+}
+
+.post-image {
+  width: 100%;
+  height: auto;
+  max-height: 600px;
+  object-fit: contain;
+  display: block;
+}
+
+/* ----- Post Content ----- */
+.post-content {
+  padding: 16px;
+  color: #333;
+}
+
+.post-content p {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ----- Post Footer ----- */
+.post-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
+
+.heart-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 22px;
+  padding: 6px;
+  transition: transform 0.2s ease;
+}
+
+.heart-btn:hover {
+  transform: scale(1.15);
+}
+
+.heart-btn.liked {
+  color: #ed4956;
+}
+
+.post-footer span {
+  font-size: 14px;
+  color: #777;
+}
+
+/* ===========================
+   COMMENTS
+=========================== */
+.comment-section {
+  padding: 0 16px 16px;
+  border-top: 1px solid #efefef;
+}
+
+.comment-item {
+  padding: 8px 0;
+  border-bottom: 1px solid #fafafa;
+}
+
+.comment-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.comment-form input {
+  flex: 1;
+  border: 1px solid #dbdbdb;
+  padding: 8px 12px;
+  border-radius: 22px;
+  background: #fafafa;
+  font-size: 14px;
+  outline: none;
+}
+
+.comment-form input:focus {
+  border-color: #a8a8a8;
+}
+
+.comment-form button {
+  background: linear-gradient(135deg, #a87528, #c9c08f);
+  color: white;
+  border: none;
+  border-radius: 22px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.comment-form button:hover {
+  background: linear-gradient(135deg, #c9c08f, #a87528);
+}
+
+/* ===========================
+   HIGHLIGHTS CAROUSEL (Instagram Stories Style)
+=========================== */
+.highlight-carousel {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  scroll-behavior: smooth;
+}
+
+.highlight-item {
+  display: flex;
+  flex-direction: column;
+  width: 100px;
+  min-width: 100px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.highlight-item:hover {
+  transform: scale(1.05);
+}
+
+.highlight-image-container {
+  position: relative;
+  width: 100px;
+  height: 140px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 2px solid transparent;
+  background: linear-gradient(135deg, #a87528, #c9c08f) border-box;
+}
+
+.highlight-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 14px;
+}
+
+/* Overlay with Author Info */
+.highlight-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.3) 0%,
+    rgba(0, 0, 0, 0.1) 30%,
+    transparent 50%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+  border-radius: 14px;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.highlight-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a87528, #c9c08f);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 13px;
+  border: 2px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.highlight-author {
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.5);
+  padding: 4px 8px;
+  border-radius: 12px;
+  backdrop-filter: blur(5px);
+  max-width: 90%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Placeholder if no image */
+.no-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #c9c08f, #a87528);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Scrollbar */
+.highlight-carousel::-webkit-scrollbar {
+  height: 4px;
+}
+
+.highlight-carousel::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.highlight-carousel::-webkit-scrollbar-thumb {
+  background: #c7c7c7;
+  border-radius: 10px;
+}
+
+.highlight-carousel::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* ===========================
+   NO POSTS MESSAGE
+=========================== */
+.no-posts {
+  text-align: center;
+  color: #8e8e8e;
+  font-size: 14px;
+  padding: 40px 20px;
+  background: #ffffff;
+  border: 1px solid #dbdbdb;
+  border-radius: 8px;
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+@media (max-width: 768px) {
+  .newsfeed-container {
+    padding: 0;
+    background: #ffffff;
+  }
+
+  .create-post-card,
+  .post-card,
+  .highlight-carousel {
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+  }
+
+  .highlight-item {
+    width: 90px;
+    min-width: 90px;
+  }
+
+  .highlight-image-container {
+    width: 90px;
+    height: 130px;
+  }
+
+  .highlight-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .highlight-author {
+    font-size: 10px;
+  }
+}

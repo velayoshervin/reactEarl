@@ -1,7 +1,11 @@
 import "./App.css";
 import { Routes, Route } from "react-router-dom";
-import Login from "./pages/Login/login";
-import SignUp from "./pages/SignUp/SignUp";
+import "bootstrap/dist/css/bootstrap.min.css";
+// import Login from "./pages/Login/login";
+// import SignUp from "./pages/SignUp/SignUp";
+import FeaturedServices from "./DynamicPages/FeaturedServices";
+import ServicesManagement from "./DynamicPages/ServicesManagement ";
+
 import VerificationLink from "./pages/Login/VerificationLink";
 import AdminDashboard from "./MantineComponents/AdminDashboard/AdminDashboard";
 import CalendarAvailability from "./MantineComponents/AdminDashboard/CalendarAvailability";
@@ -22,19 +26,46 @@ import ServicesOfferedPage from "./components/ServicesOfferedPage";
 import Resource from "./components/ProductComponents/Resource";
 import PricingPage from "./components/PricingPage";
 import Customization from "./MantineComponents/mantine/Customization";
+import Login from "./components/ProductComponents/LoginSignup/Login";
+import SignUp from "./components/ProductComponents/LoginSignup/SignUp";
+import NewsFeed from "./components/NewsFeedComponents/NewsFeed";
+import ServiceViewing from "./DynamicPages/ServiceViewing";
+import Customize from "./components/BookingProcess/Customize";
+import MenuBundleManagement from "./DynamicPages/MenuBundleManagement";
+import Reports from "./DynamicPages/Reports";
 
 function App() {
   return (
     <>
       <>
         <Routes>
-          <Route path="/login" element={<Login />}></Route>
+          <Route path="/reports" element={<Reports />}></Route>
+          {/* <Route path="/login" element={<Login />}></Route> */}
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/menu-bundle-management"
+            element={<MenuBundleManagement />}
+          ></Route>
           <Route path="/customization" element={<Customization />}></Route>
           <Route path="/verify" element={<VerificationLink />}></Route>
+          {/* <Route path="/sign-up" element={<SignUp />} /> */}
           <Route path="/sign-up" element={<SignUp />} />
           <Route path="/manage-calendar" element={<CalendarAvailability />} />
           <Route path="/admin-dashboard/*" element={<AdminDashboard />} />
           <Route path="general-setting" element={<GeneralSetting />}></Route>
+          <Route
+            path="/services"
+            element={
+              <FeaturedServices
+                onSuccess={(newService) => console.log("Created:", newService)}
+              />
+            }
+          ></Route>
+          <Route
+            path="/manage-services"
+            element={<ServicesManagement />}
+          ></Route>
+          {/* <Route path="/services-offered" element={<ServiceViewing />}></Route> */}
 
           <Route
             path="user-role-settings"
@@ -47,6 +78,9 @@ function App() {
 
           <Route path="*" element={<div>Page not found</div>} />
           <Route path="/" element={<MyLandingPage />}>
+            <Route path="/book-now" element={<Customize />} />
+            <Route path="community" element={<NewsFeed />} />
+            <Route path="services-offered" element={<ServiceViewing />}></Route>
             <Route index element={<WithHero />} />
             <Route path="services" element={<ServicesOfferedPage />} />
             <Route path="resources" element={<Resource />} />

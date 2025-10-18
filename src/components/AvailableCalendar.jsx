@@ -6,7 +6,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import { showNotification } from "@mantine/notifications";
 
-const AvailableCalendar = ({ onDateSelect, initialDate }) => {
+const AvailableCalendar = ({ onDateSelect, initialDate, isBooking }) => {
   const [excludedDates, setExcludedDates] = useState([]);
   const [pickedDate, setPickedDate] = useState(null);
 
@@ -56,12 +56,17 @@ const AvailableCalendar = ({ onDateSelect, initialDate }) => {
     if (onDateSelect) onDateSelect(date);
   };
 
+  const minDate = isBooking
+    ? dayjs().add(21, "day").toDate()
+    : dayjs().toDate();
+
   return (
-    <div className="bg-white w-full max-w-2xl mx-auto">
+    <div className="bg-white w-full max-w-2xl mx-auto ">
       <Calendar
         value={pickedDate}
         onChange={handleSelect}
-        minDate={dayjs().add(4, "day").toDate()}
+        // minDate={dayjs().add(4, "day").toDate()}
+        minDate={minDate}
         renderDay={(date) => {
           const booked = isDateExcluded(date);
           const selected =

@@ -5,20 +5,11 @@ import "./MyLandingPage.css";
 import footerImage from "../assets/footer.jpg";
 import Slogo from "../assets/SLogo.png";
 import { logout } from "../ItemsAxios";
-import {
-  Group,
-  Anchor,
-  Menu,
-  Button,
-  Avatar,
-  Stack,
-  Divider,
-  Text,
-} from "@mantine/core";
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Group, Menu, Avatar, Text } from "@mantine/core";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { queryClient } from "../AxiosTanstack";
-import { useNavigate } from "react-router-dom";
 import { notifications } from "@mantine/notifications";
+import Chatbot from "./ProductComponents/ChatBot/Chat";
 
 const MyLandingPage = () => {
   const user = queryClient.getQueryData(["currentUser"]);
@@ -42,7 +33,7 @@ const MyLandingPage = () => {
   };
 
   const goToDashboard = () => {
-    const role = user.role;
+    const role = user?.role;
     if (role === "ADMIN") {
       navigate("/admin-dashboard");
     } else if (role === "CUSTOMER") {
@@ -52,24 +43,18 @@ const MyLandingPage = () => {
 
   const LoggedIn = () => (
     <Group>
-      {/* <NavLink to="/logout">Logout</NavLink>
-      <NavLink to="/dashboard">Dashboard</NavLink> */}
       <Menu trigger="click-hover" openDelay={100} closeDelay={400} shadow="sm">
         <Menu.Target>
           <Group>
-            <Avatar src={user.avatarUrl} />
+            <Avatar src={user?.avatarUrl} />
             <Text>
               {user?.firstname || ""} {user?.lastname || ""}
             </Text>
           </Group>
         </Menu.Target>
         <Menu.Dropdown>
-          <Menu.Item value="help" onClick={goToDashboard}>
-            dashboard
-          </Menu.Item>
-          <Menu.Item value="logout" onClick={handleLogout}>
-            logout
-          </Menu.Item>
+          <Menu.Item onClick={goToDashboard}>Dashboard</Menu.Item>
+          <Menu.Item onClick={handleLogout}>Logout</Menu.Item>
         </Menu.Dropdown>
       </Menu>
     </Group>
@@ -96,10 +81,11 @@ const MyLandingPage = () => {
         }}
       />
 
+      {/* Navbar */}
       <nav className="flex py-[15px] px-[30px] justify-between sticky top-0 bg-white shadow z-50">
-        <img src={logo} className="h-[50px] w-[50px]"></img>
+        <img src={logo} className="h-[50px] w-[50px]" alt="Logo" />
 
-        <div className="flex border-box items-center gap-[15px]">
+        <div className="flex items-center gap-[15px]">
           <NavLink
             to="/"
             className="landing-page-navlink"
@@ -110,10 +96,10 @@ const MyLandingPage = () => {
           >
             Home
           </NavLink>
-          <NavLink to="services" className="landing-page-navlink">
+          <NavLink to="services-offered" className="landing-page-navlink">
             Services
           </NavLink>
-          <NavLink to="#" className="landing-page-navlink">
+          <NavLink to="/community" className="landing-page-navlink">
             Community
           </NavLink>
           <NavLink to="resources" className="landing-page-navlink">
@@ -122,9 +108,10 @@ const MyLandingPage = () => {
           <NavLink to="pricing" className="landing-page-navlink">
             Pricing
           </NavLink>
-          <NavLink to="#" className="landing-page-navlink ">
+          <NavLink to="#" className="landing-page-navlink">
             Contacts
           </NavLink>
+
           <div className="flex gap-2">
             {user?.userId ? (
               <LoggedIn />
@@ -136,7 +123,6 @@ const MyLandingPage = () => {
                 >
                   Sign In
                 </NavLink>
-
                 <NavLink
                   to="sign-up"
                   className="landing-page-navlink bg-[#b97a57] rounded !text-white hover:!text-black"
@@ -150,7 +136,10 @@ const MyLandingPage = () => {
         </div>
       </nav>
 
-      <Outlet className="bg-transparent" />
+      <Outlet
+        context={{ userRole: user?.role || "GUEST" }}
+        className="bg-transparent"
+      />
 
       <footer
         style={{
@@ -166,6 +155,7 @@ const MyLandingPage = () => {
           <p>All rights reserved.</p>
         </div>
       </footer>
+      {/* <Chatbot /> */}
     </div>
   );
 };

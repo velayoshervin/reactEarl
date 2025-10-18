@@ -32,9 +32,9 @@ import AvailableCalendar from "./AvailableCalendar";
 import { HoverCard, Group } from "@mantine/core";
 import { IconCalendarEvent } from "@tabler/icons-react";
 import { Select, Avatar } from "@mantine/core";
-
 import { NumberInput } from "@mantine/core";
 import Customization from "../MantineComponents/mantine/Customization";
+import Customize from "./BookingProcess/Customize";
 
 const user = queryClient.getQueryData(["currentUser"]);
 
@@ -85,10 +85,10 @@ const Services = () => {
 const PackagesSection = () => (
   <>
     <section id="packages" className="packages">
-      <div class="container">
-        <h2 class="section-title">Our Packages</h2>
-        <div class="packages-grid">
-          <div class="package-card">
+      <div className="container">
+        <h2 className="section-title">Our Packages</h2>
+        <div className="packages-grid">
+          <div className="package-card">
             <center>
               <img src={pk1} alt="Platinum Package" class="package-img" />
             </center>
@@ -171,6 +171,8 @@ const WithHero = () => {
     };
   }, []);
 
+  const navigate = useNavigate();
+
   //center center/cover
   return (
     <div className="bg-transparent relative">
@@ -184,11 +186,21 @@ const WithHero = () => {
         <div className="hero-text !opacity-100" data-animate>
           <h1>Silvestre's</h1>
           <h2>Events and Exquisite Styles</h2>
-          <div className="flex z-999 relative opacity-100 gap-2"></div>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => {
+                navigate("/book-now");
+              }}
+            >
+              Book now
+            </Button>
+            <Button>Get Quote</Button>
+          </div>
         </div>
       </div>
 
-      <Customization user={user} />
+      {/* <Customization user={user} /> */}
+      {/* <Customize></Customize> */}
 
       {<PackagesSection></PackagesSection>}
 
